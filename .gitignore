@@ -1,0 +1,28 @@
+# --- generated ---
+venv/
+job_tracker_agent/venv/
+.mypy_cache/
+__pycache__/
+*.pyc
+
+# --- credentials: never commit ---
+.env
+credentials.json
+authorized_user.json
+authorized_user.json.expired-*
+gmail_authorized_user.json
+gmail_authorized_user.json.expired-*
+token*.json
+
+# --- personal ---
+.unslop/
+logs/
+.tmp/
+job_tracker_agent/test_classify.py
+
+# --- machine-local ---
+.claude/settings.local.json
+
+# --- scratch dumps ---
+ashby_*.json
+gh_asana.json

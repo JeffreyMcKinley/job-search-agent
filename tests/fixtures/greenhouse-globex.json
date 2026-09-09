@@ -1,0 +1,96 @@
+[
+  {
+    "id": "greenhouse-globex-posting",
+    "url": "https://boards.greenhouse.io/globex/jobs/4455667",
+    "title": "Platform Engineer - Globex",
+    "text": "Platform Engineer\nGlobex - Austin, TX (Hybrid)\n\nGlobex is hiring a Platform Engineer to build the internal developer platform used by 300 engineers. You will own CI/CD, Kubernetes tooling, and developer experience.\n\nRequirements\n- 5+ years in platform, infra, or SRE roles\n- Terraform, Kubernetes, GitHub Actions\n- Strong Python or Go\n\nBase range: $160,000 - $195,000.\n",
+    "js": [
+      {
+        "match": "grnhse_iframe",
+        "result": "{\"boardToken\":\"globex\",\"jobToken\":\"4455667\"}"
+      }
+    ],
+    "elements": [
+      { "role": "button", "label": "Apply for this job", "goto": "greenhouse-globex-form" }
+    ]
+  },
+  {
+    "id": "greenhouse-globex-form",
+    "url": "https://job-boards.greenhouse.io/embed/job_app?for=globex&token=4455667",
+    "title": "Application - Platform Engineer - Globex",
+    "text": "Apply for Platform Engineer at Globex.",
+    "elements": [
+      { "role": "textbox", "label": "First Name", "required": true },
+      { "role": "textbox", "label": "Last Name", "required": true },
+      { "role": "textbox", "label": "Email", "required": true },
+      { "role": "textbox", "label": "Phone", "required": true },
+      { "role": "file", "label": "Resume/CV", "required": true },
+      { "role": "file", "label": "Cover Letter", "required": false },
+      { "role": "textbox", "label": "LinkedIn Profile", "required": false },
+      { "role": "textbox", "label": "Website", "required": false },
+      {
+        "role": "combobox",
+        "label": "Are you legally authorized to work in the United States?",
+        "required": true,
+        "options": ["Yes", "No"]
+      },
+      {
+        "role": "combobox",
+        "label": "Will you now or in the future require sponsorship for employment visa status?",
+        "required": true,
+        "options": ["Yes", "No"]
+      },
+      {
+        "role": "combobox",
+        "label": "Have you previously worked at Globex?",
+        "required": true,
+        "options": ["Yes", "No"]
+      },
+      {
+        "role": "combobox",
+        "label": "Gender",
+        "required": false,
+        "options": ["Male", "Female", "Decline To Self Identify"]
+      },
+      {
+        "role": "combobox",
+        "label": "Hispanic/Latino",
+        "required": false,
+        "options": ["Yes", "No", "Decline To Self Identify"]
+      },
+      {
+        "role": "combobox",
+        "label": "Veteran Status",
+        "required": false,
+        "options": [
+          "I identify as one or more of the classifications of a protected veteran",
+          "I am not a protected veteran",
+          "I don't wish to answer"
+        ]
+      },
+      {
+        "role": "combobox",
+        "label": "Disability Status",
+        "required": false,
+        "options": [
+          "Yes, I have a disability, or have had one in the past",
+          "No, I do not have a disability",
+          "I do not want to answer"
+        ]
+      },
+      {
+        "role": "button",
+        "label": "Submit Application",
+        "goto": "greenhouse-globex-thanks",
+        "requires_complete": true
+      }
+    ]
+  },
+  {
+    "id": "greenhouse-globex-thanks",
+    "url": "https://job-boards.greenhouse.io/embed/job_app/confirmation?for=globex",
+    "title": "Application submitted - Globex",
+    "text": "Thank you for applying to Globex.",
+    "elements": []
+  }
+]

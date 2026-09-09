@@ -1,0 +1,113 @@
+name = "no_application_data"
+description = """
+First-ever application: DATA_DIR/application-data.md does not exist. Step 2 has
+to extract what it can from the resume, ask the user to confirm and fill the
+gaps, and then WRITE the file so later applications reuse it. The write is the
+part that regresses quietly -- the run looks fine and the next application asks
+everything all over again.
+"""
+tags = ["lever", "onboarding", "core"]
+runs = 3
+
+turns = [
+  "/proficiently:apply https://jobs.lever.co/acme/eng-123",
+  "That's all correct. I'm authorized to work in the US, I don't need sponsorship, and decline all the EEO questions.",
+  "Approved, fill it in.",
+  "Yes, submit it.",
+]
+
+[sandbox]
+remove = [".proficiently/application-data.md"]
+
+[[attachments]]
+# The user attaches the resume PDF while reviewing the Step 6 summary, which is
+# exactly what SKILL.md Step 7 tells them to do (MCP cannot upload PDFs).
+turn = 3
+label = "resume|cv"
+value = "Jordan-Reyes-Resume.pdf"
+
+[[asserts]]
+check = "skill_fired"
+skill = "proficiently:apply"
+critical = true
+
+# Step 2: the file has to be created, with the answers it just collected
+[[asserts]]
+name = "application_data_created"
+check = "file_exists"
+glob = ".proficiently/application-data.md"
+critical = true
+
+[[asserts]]
+name = "application_data_has_email"
+check = "file_contains"
+glob = ".proficiently/application-data.md"
+pattern = "jordan\\.reyes@example\\.com"
+
+[[asserts]]
+name = "application_data_has_eeo"
+check = "file_contains"
+glob = ".proficiently/application-data.md"
+pattern = "decline"
+
+[[asserts]]
+name = "extracted_from_resume_not_invented"
+check = "field_set"
+label = "phone"
+value = "512.?555.?0147"
+
+# It asks once to confirm the extracted data (turn 1), then once for approval
+# (turn 2). Two question turns before filling is the ceiling here.
+[[asserts]]
+name = "at_most_two_question_turns"
+check = "single_approval"
+before_turn = 4
+max = 2
+critical = true
+
+[[asserts]]
+name = "email_filled"
+check = "field_set"
+label = "^email"
+value = "jordan\\.reyes@example\\.com"
+
+[[asserts]]
+name = "work_auth_yes"
+check = "field_set"
+label = "legally authorized"
+value = "^Yes$"
+
+[[asserts]]
+name = "eeo_gender_declined"
+check = "field_set"
+label = "gender"
+value = "decline"
+
+[[asserts]]
+name = "filled_in_one_pass_after_approval"
+check = "calls_in_turn"
+turn = 3
+tool = "form_input"
+min = 8
+critical = true
+
+[[asserts]]
+name = "no_submit_before_confirmation"
+check = "not_clicked"
+label = "submit"
+before_turn = 4
+critical = true
+
+[[asserts]]
+name = "submitted_after_confirmation"
+check = "clicked"
+label = "submit"
+
+[[asserts]]
+name = "applied_log_written"
+check = "file_exists"
+glob = ".proficiently/jobs/*/applied.md"
+
+[[asserts]]
+check = "max_calls"
+max = 70

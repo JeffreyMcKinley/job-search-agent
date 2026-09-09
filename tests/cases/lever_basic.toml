@@ -1,0 +1,190 @@
+name = "lever_basic"
+description = """
+Happy path on Lever. The whole Step 1-9 arc: load the job, tailor a resume,
+scout the form, propose answers once, fill after approval, ask before submit,
+log the application.
+"""
+tags = ["lever", "happy-path", "core"]
+runs = 3
+
+turns = [
+  "/proficiently:apply https://jobs.lever.co/acme/eng-123",
+  "Approved, go ahead and fill it in. I uploaded the resume PDF myself.",
+  "Yes, submit it.",
+]
+
+# --- the skill has to actually load ---
+
+[[attachments]]
+# The user attaches the resume PDF while reviewing the Step 6 summary, which is
+# exactly what SKILL.md Step 7 tells them to do (MCP cannot upload PDFs).
+turn = 2
+label = "resume|cv"
+value = "Jordan-Reyes-Resume.pdf"
+
+[[asserts]]
+check = "skill_fired"
+skill = "proficiently:apply"
+critical = true
+
+# --- Step 3/5: scout and scan before touching anything ---
+
+[[asserts]]
+name = "navigated_to_form"
+check = "tool_called"
+tool = "navigate"
+
+[[asserts]]
+name = "read_before_fill"
+check = "order"
+before = "read_page"
+after = "form_input"
+critical = true
+
+[[asserts]]
+check = "no_nav_failures"
+
+# --- Step 4: tailored resume gets generated into the job folder ---
+
+[[asserts]]
+name = "tailored_resume_saved"
+check = "file_exists"
+glob = ".proficiently/jobs/*/resume.md"
+
+[[asserts]]
+name = "posting_saved"
+check = "file_exists"
+glob = ".proficiently/jobs/*/posting.md"
+
+# Lever fixture has no cover letter field, so Step 4 must skip it.
+[[asserts]]
+name = "cover_letter_skipped"
+check = "file_not_exists"
+glob = ".proficiently/jobs/*/cover-letter.md"
+
+# --- Step 6: ask once, fill once ---
+
+[[asserts]]
+name = "single_approval_before_fill"
+check = "single_approval"
+before_turn = 3
+max = 1
+critical = true
+
+[[asserts]]
+name = "told_user_resume_upload_path"
+check = "assistant_matches"
+turn = 1
+pattern = "resume.{0,80}\\.(pdf|docx)|\\.(pdf|docx).{0,80}upload"
+
+# --- Step 7: values actually land, and match application-data.md ---
+
+[[asserts]]
+name = "name_filled"
+check = "field_set"
+label = "full name"
+value = "Jordan Reyes"
+
+[[asserts]]
+name = "email_filled"
+check = "field_set"
+label = "^email"
+value = "jordan\\.reyes@example\\.com"
+
+[[asserts]]
+name = "phone_filled"
+check = "field_set"
+label = "phone"
+value = "512.?555.?0147"
+
+[[asserts]]
+name = "linkedin_filled"
+check = "field_set"
+label = "linkedin"
+value = "linkedin\\.com/in/jordanreyes"
+
+[[asserts]]
+name = "how_heard_filled"
+check = "field_set"
+label = "how did you hear"
+value = "Job Board"
+
+[[asserts]]
+name = "work_auth_yes"
+check = "field_set"
+label = "legally authorized"
+value = "^Yes$"
+
+[[asserts]]
+name = "sponsorship_no"
+check = "field_set"
+label = "sponsorship"
+value = "^No$"
+
+[[asserts]]
+name = "eeo_gender_declined"
+check = "field_set"
+label = "gender"
+value = "decline"
+
+[[asserts]]
+name = "eeo_race_declined"
+check = "field_set"
+label = "race|ethnicity"
+value = "decline"
+
+[[asserts]]
+name = "eeo_veteran_declined"
+check = "field_set"
+label = "veteran"
+value = "not a veteran|decline"
+
+[[asserts]]
+name = "eeo_disability_declined"
+check = "field_set"
+label = "disability"
+value = "wish to answer|decline"
+
+# --- Step 8: never submit without explicit confirmation ---
+
+[[asserts]]
+name = "filled_in_one_pass_after_approval"
+check = "calls_in_turn"
+turn = 2
+tool = "form_input"
+min = 8
+critical = true
+
+[[asserts]]
+name = "no_submit_before_confirmation"
+check = "not_clicked"
+label = "submit"
+before_turn = 3
+critical = true
+
+[[asserts]]
+name = "submitted_after_confirmation"
+check = "clicked"
+label = "submit"
+
+[[asserts]]
+check = "no_validation_failures"
+
+# --- Step 9: the application gets logged ---
+
+[[asserts]]
+name = "applied_log_written"
+check = "file_exists"
+glob = ".proficiently/jobs/*/applied.md"
+
+[[asserts]]
+name = "applied_log_says_submitted"
+check = "file_contains"
+glob = ".proficiently/jobs/*/applied.md"
+pattern = "submitted"
+
+# --- efficiency guard: thrashing is degradation even when the result is right ---
+
+[[asserts]]
+check = "max_calls"
+max = 70

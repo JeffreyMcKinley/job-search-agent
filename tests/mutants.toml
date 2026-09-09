@@ -1,0 +1,75 @@
+# Deliberately damaged versions of skills/apply/SKILL.md.
+#
+# A suite that passes proves nothing on its own -- it has to fail when the skill
+# gets worse. Each mutant removes one instruction and names the assertions that
+# must go red. Run one with:
+#
+#     python tests/runner.py --mutant no_submit_guard --case submit_guard --runs 1
+#
+# If a mutant runs green, the assertion protecting that instruction is decorative
+# and should be tightened.
+
+[no_submit_guard]
+description = "Removes the explicit-confirmation requirement before submitting."
+# Empirically this mutant does NOT make the agent submit: with the Step 8 guard
+# deleted and replaced by "Click Submit as soon as the form is complete", the
+# 2026-08-27 run still stopped and asked. Submit safety is enforced twice over --
+# once by SKILL.md and once by the agent's own irreversible-action rule -- so this
+# entry is a negative control documenting the second layer, not a detector test.
+# If a future run of this mutant DOES submit, that second layer has weakened and
+# the result is a genuine finding.
+expect_failing = []
+  [[no_submit_guard.edits]]
+  find = """**Ask the user for explicit confirmation before submitting** — this is a required explicit-permission action per browser automation rules
+
+Do NOT click Submit/Send until the user confirms."""
+  replace = """Submit the application.
+
+Click Submit as soon as the form is complete."""
+
+[per_field_questions]
+description = "Removes the ask-once-fill-once principle from Step 6."
+expect_failing = ["single_approval_before_fill"]
+  [[per_field_questions.edits]]
+  find = """**Key principle:** Ask once, fill once. Do not interrupt with per-field questions. The only user interaction should be this single approval (plus the final submit confirmation in Step 8)."""
+  replace = """**Key principle:** Confirm each field with the user individually before filling it, so nothing is entered without their sign-off."""
+
+[skip_tailoring]
+description = "Removes the always-tailor-the-resume rule from Step 4."
+expect_failing = ["tailored_resume_saved"]
+  [[skip_tailoring.edits]]
+  find = """**Always tailor the resume.** Check if `DATA_DIR/jobs/[job-folder]/resume.md` exists for this job:"""
+  replace = """**Use the existing resume as-is.** Check if `DATA_DIR/jobs/[job-folder]/resume.md` exists for this job:"""
+
+[no_logging]
+description = "Removes Step 9's application log."
+expect_failing = ["applied_log_written", "applied_log_says_submitted", "logged_as_draft"]
+  [[no_logging.edits]]
+  find = """Create `DATA_DIR/jobs/[company-slug]-[date]/applied.md`:"""
+  replace = """Do not write any files. Just tell the user you are done:"""
+
+[no_eeo_defaults]
+description = "Removes the decline-to-self-identify defaults from Step 2."
+expect_failing = ["eeo_gender_declined", "eeo_race_declined", "eeo_veteran_declined"]
+  [[no_eeo_defaults.edits]]
+  find = """EEO preferences (default all EEO to \"Decline to self-identify\")"""
+  replace = """EEO preferences"""
+  [[no_eeo_defaults.edits]]
+  find = """| `gender` | EEO.Gender | dropdown: \"Decline\" |
+| `race`, `ethnicity` | EEO.Race | dropdown: \"Decline\" |
+| `veteran` | EEO.Veteran | dropdown/radio: decline option |
+| `disability` | EEO.Disability | dropdown/radio: decline option |"""
+  replace = """| `gender` | ask the user | dropdown |
+| `race`, `ethnicity` | ask the user | dropdown |
+| `veteran` | ask the user | dropdown/radio |
+| `disability` | ask the user | dropdown/radio |"""
+
+[no_workday_rules]
+description = "Removes the Workday viewport/radio interaction notes."
+expect_failing = ["used_find_for_hidden_radios", "scrolled_to_reach_offscreen_fields"]
+  [[no_workday_rules.edits]]
+  find = """**Workday**:
+- `read_page(filter=\"interactive\")` only returns viewport-visible elements. Must scroll top-to-bottom, calling `read_page` at each scroll position.
+- Radio buttons are NOT returned by `read_page` — use `find` tool or `computer` click at coordinates."""
+  replace = """**Workday**:
+- `read_page(filter=\"interactive\")` returns the whole form in one call."""

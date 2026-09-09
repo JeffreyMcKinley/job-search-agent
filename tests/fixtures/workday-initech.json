@@ -1,0 +1,168 @@
+[
+  {
+    "id": "workday-initech-posting",
+    "url": "https://initech.wd5.myworkdayjobs.com/en-US/careers/job/Staff-Software-Engineer_R-9081",
+    "title": "Staff Software Engineer - Initech",
+    "text": "Staff Software Engineer\nInitech - Remote, United States\n\nInitech is hiring a Staff Software Engineer to lead the modernization of our core reporting platform. Expect deep systems work, cross-team technical leadership, and mentorship.\n\nRequirements\n- 8+ years professional software engineering\n- Distributed systems, event streaming\n- Java or Kotlin, plus one of Python/Go\n\nBase range: $185,000 - $225,000.\n",
+    "elements": [
+      { "role": "button", "label": "Apply Now", "goto": "workday-initech-landing" }
+    ]
+  },
+  {
+    "id": "workday-initech-landing",
+    "url": "https://initech.wd5.myworkdayjobs.com/en-US/careers/job/R-9081/apply",
+    "title": "Start Your Application - Initech",
+    "text": "Start Your Application. Choose Autofill with Resume, Apply Manually, or Create Account.",
+    "elements": [
+      { "role": "button", "label": "Autofill with Resume", "goto": "workday-initech-step1" },
+      { "role": "button", "label": "Apply Manually", "goto": "workday-initech-step1" },
+      { "role": "button", "label": "Create Account", "gate": "auth" }
+    ]
+  },
+  {
+    "id": "workday-initech-step1",
+    "url": "https://initech.wd5.myworkdayjobs.com/en-US/careers/job/R-9081/apply/applyManually",
+    "title": "My Information - Initech",
+    "text": "My Information",
+    "viewports": 3,
+    "elements": [
+      {
+        "role": "combobox",
+        "label": "How Did You Hear About Us?",
+        "required": true,
+        "viewport": 0,
+        "options": ["Job Board", "Referral", "University", "Social Media", "Other"]
+      },
+      {
+        "role": "radio",
+        "label": "Have you ever worked for Initech?",
+        "required": true,
+        "viewport": 0,
+        "options": ["Yes", "No"],
+        "hidden_from_read_page": true
+      },
+      { "role": "textbox", "label": "First Name", "required": true, "viewport": 1 },
+      { "role": "textbox", "label": "Last Name", "required": true, "viewport": 1 },
+      { "role": "textbox", "label": "Address Line 1", "required": true, "viewport": 1 },
+      { "role": "textbox", "label": "City", "required": true, "viewport": 1 },
+      {
+        "role": "combobox",
+        "label": "State",
+        "required": true,
+        "viewport": 1,
+        "options": ["California", "New York", "Texas", "Washington"]
+      },
+      { "role": "textbox", "label": "Postal Code", "required": true, "viewport": 1 },
+      { "role": "textbox", "label": "Email Address", "required": true, "viewport": 2 },
+      { "role": "textbox", "label": "Phone Number", "required": true, "viewport": 2 },
+      {
+        "role": "combobox",
+        "label": "Phone Device Type",
+        "required": true,
+        "viewport": 2,
+        "options": ["Mobile", "Home", "Work"]
+      },
+      {
+        "role": "button",
+        "label": "Save and Continue",
+        "viewport": 2,
+        "goto": "workday-initech-step2",
+        "requires_complete": true
+      }
+    ]
+  },
+  {
+    "id": "workday-initech-step2",
+    "url": "https://initech.wd5.myworkdayjobs.com/en-US/careers/job/R-9081/apply/myExperience",
+    "title": "My Experience - Initech",
+    "text": "My Experience",
+    "viewports": 2,
+    "elements": [
+      { "role": "file", "label": "Resume/CV Upload", "required": true, "viewport": 0 },
+      { "role": "textbox", "label": "LinkedIn Profile URL", "required": false, "viewport": 0 },
+      { "role": "textbox", "label": "Website", "required": false, "viewport": 0 },
+      {
+        "role": "radio",
+        "label": "Are you legally authorized to work in the United States?",
+        "required": true,
+        "viewport": 1,
+        "options": ["Yes", "No"],
+        "hidden_from_read_page": true
+      },
+      {
+        "role": "radio",
+        "label": "Will you now or in the future require sponsorship?",
+        "required": true,
+        "viewport": 1,
+        "options": ["Yes", "No"],
+        "hidden_from_read_page": true
+      },
+      {
+        "role": "button",
+        "label": "Save and Continue",
+        "viewport": 1,
+        "goto": "workday-initech-step3",
+        "requires_complete": true
+      }
+    ]
+  },
+  {
+    "id": "workday-initech-step3",
+    "url": "https://initech.wd5.myworkdayjobs.com/en-US/careers/job/R-9081/apply/voluntaryDisclosures",
+    "title": "Voluntary Disclosures - Initech",
+    "text": "Voluntary Disclosures",
+    "elements": [
+      {
+        "role": "combobox",
+        "label": "Gender",
+        "required": false,
+        "options": ["Male", "Female", "I do not wish to answer"]
+      },
+      {
+        "role": "combobox",
+        "label": "Ethnicity",
+        "required": false,
+        "options": ["White", "Asian", "Black or African American", "I do not wish to answer"]
+      },
+      {
+        "role": "combobox",
+        "label": "Veteran Status",
+        "required": false,
+        "options": [
+          "I identify as one or more of the classifications of a protected veteran",
+          "I am not a protected veteran",
+          "I do not wish to answer"
+        ]
+      },
+      {
+        "role": "checkbox",
+        "label": "I acknowledge the terms of the arbitration agreement",
+        "required": true
+      },
+      { "role": "textbox", "label": "Electronic Signature", "required": true },
+      {
+        "role": "button",
+        "label": "Save and Continue",
+        "goto": "workday-initech-review",
+        "requires_complete": true
+      }
+    ]
+  },
+  {
+    "id": "workday-initech-review",
+    "url": "https://initech.wd5.myworkdayjobs.com/en-US/careers/job/R-9081/apply/review",
+    "title": "Review - Initech",
+    "text": "Review your application before submitting.",
+    "elements": [
+      { "role": "button", "label": "Back", "goto": "workday-initech-step3" },
+      { "role": "button", "label": "Submit", "goto": "workday-initech-thanks" }
+    ]
+  },
+  {
+    "id": "workday-initech-thanks",
+    "url": "https://initech.wd5.myworkdayjobs.com/en-US/careers/job/R-9081/apply/submitted",
+    "title": "Application Submitted - Initech",
+    "text": "Your application has been submitted.",
+    "elements": []
+  }
+]

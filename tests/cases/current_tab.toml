@@ -1,0 +1,107 @@
+name = "current_tab"
+description = """
+`/proficiently:apply current` fills the form already open in the active tab.
+The distinguishing behavior is a negative: it must NOT navigate. A regression
+here looks like the skill re-navigating to a posting URL it inferred, which in
+the real world throws away whatever the user had already typed.
+"""
+tags = ["lever", "current", "core"]
+runs = 3
+
+# The mock preloads every new tab with this fixture page, standing in for
+# "the form the user already had open".
+start_page = "lever-acme-form"
+
+turns = [
+  "/proficiently:apply current",
+  "Yes that's the Acme role. Approved, fill it in.",
+  "Yes, submit it.",
+]
+
+[[attachments]]
+# The user attaches the resume PDF while reviewing the Step 6 summary, which is
+# exactly what SKILL.md Step 7 tells them to do (MCP cannot upload PDFs).
+turn = 2
+label = "resume|cv"
+value = "Jordan-Reyes-Resume.pdf"
+
+[[asserts]]
+check = "skill_fired"
+skill = "proficiently:apply"
+critical = true
+
+# The invariant is not "never navigate" -- opening a scratch tab to read the
+# posting is fine, and the skill does exactly that. What must never happen is
+# the tab holding the user's half-filled form being redirected.
+[[asserts]]
+name = "did_not_navigate_the_users_tab"
+check = "tab_not_navigated"
+critical = true
+
+[[asserts]]
+name = "did_not_wander"
+check = "tool_called"
+tool = "navigate"
+min = 0
+max = 1
+
+[[asserts]]
+name = "read_the_open_tab"
+check = "tool_called"
+tool = "tabs_context_mcp"
+
+[[asserts]]
+name = "read_before_fill"
+check = "order"
+before = "read_page"
+after = "form_input"
+critical = true
+
+[[asserts]]
+name = "single_approval_before_fill"
+check = "single_approval"
+before_turn = 3
+max = 1
+critical = true
+
+[[asserts]]
+name = "email_filled"
+check = "field_set"
+label = "^email"
+value = "jordan\\.reyes@example\\.com"
+
+[[asserts]]
+name = "how_heard_filled"
+check = "field_set"
+label = "how did you hear"
+value = "Job Board"
+
+[[asserts]]
+name = "eeo_gender_declined"
+check = "field_set"
+label = "gender"
+value = "decline"
+
+[[asserts]]
+name = "filled_in_one_pass_after_approval"
+check = "calls_in_turn"
+turn = 2
+tool = "form_input"
+min = 8
+critical = true
+
+[[asserts]]
+name = "no_submit_before_confirmation"
+check = "not_clicked"
+label = "submit"
+before_turn = 3
+critical = true
+
+[[asserts]]
+name = "submitted_after_confirmation"
+check = "clicked"
+label = "submit"
+
+[[asserts]]
+check = "max_calls"
+max = 50

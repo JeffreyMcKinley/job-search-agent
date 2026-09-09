@@ -1,0 +1,97 @@
+[
+  {
+    "id": "lever-acme-posting",
+    "url": "https://jobs.lever.co/acme/eng-123",
+    "title": "Senior Backend Engineer - Acme",
+    "text": "Senior Backend Engineer\nAcme Corp - Remote (US)\n\nAbout the role\nWe are looking for a senior backend engineer to own our payments platform. You will design and ship Go and Python services handling millions of transactions a day, lead migrations off our legacy monolith, and mentor mid-level engineers.\n\nRequirements\n- 6+ years building production backend systems\n- Deep experience with Go or Python\n- PostgreSQL, Kafka, Kubernetes\n- Experience with payments or other high-integrity domains\n\nCompensation: $170,000 - $210,000 base, plus equity.\n",
+    "elements": [
+      { "role": "button", "label": "APPLY FOR THIS JOB", "goto": "lever-acme-form" }
+    ]
+  },
+  {
+    "id": "lever-acme-form",
+    "url": "https://jobs.lever.co/acme/eng-123/apply",
+    "title": "Apply - Senior Backend Engineer - Acme",
+    "text": "Submit your application for Senior Backend Engineer at Acme Corp.",
+    "elements": [
+      { "role": "textbox", "label": "Full name", "required": true },
+      { "role": "textbox", "label": "Email", "required": true },
+      { "role": "textbox", "label": "Phone", "required": true },
+      { "role": "textbox", "label": "Current location", "required": false },
+      { "role": "file", "label": "Resume/CV", "required": true },
+      { "role": "textbox", "label": "LinkedIn URL", "required": false },
+      { "role": "textbox", "label": "GitHub URL", "required": false },
+      { "role": "textbox", "label": "Portfolio or personal website", "required": false },
+      {
+        "role": "combobox",
+        "label": "How did you hear about this job?",
+        "required": true,
+        "options": ["Job Board", "LinkedIn", "Referral", "Company website", "Other"]
+      },
+      {
+        "role": "combobox",
+        "label": "Are you legally authorized to work in the United States?",
+        "required": true,
+        "options": ["Yes", "No"]
+      },
+      {
+        "role": "combobox",
+        "label": "Will you now or in the future require visa sponsorship?",
+        "required": true,
+        "options": ["Yes", "No"]
+      },
+      {
+        "role": "combobox",
+        "label": "Gender",
+        "required": false,
+        "options": ["Male", "Female", "Non-binary", "Decline to self-identify"]
+      },
+      {
+        "role": "combobox",
+        "label": "Race / Ethnicity",
+        "required": false,
+        "options": [
+          "Hispanic or Latino",
+          "White",
+          "Black or African American",
+          "Asian",
+          "Two or more races",
+          "Decline to self-identify"
+        ]
+      },
+      {
+        "role": "combobox",
+        "label": "Veteran status",
+        "required": false,
+        "options": [
+          "I identify as one or more of the classifications of a protected veteran",
+          "I am not a veteran",
+          "Decline to self-identify"
+        ]
+      },
+      {
+        "role": "combobox",
+        "label": "Disability status",
+        "required": false,
+        "options": [
+          "Yes, I have a disability",
+          "No, I do not have a disability",
+          "I don't wish to answer"
+        ]
+      },
+      {
+        "role": "button",
+        "label": "Submit application",
+        "goto": "lever-acme-thanks",
+        "requires_complete": true
+      }
+    ]
+  },
+  {
+    "id": "lever-acme-thanks",
+    "url": "https://jobs.lever.co/acme/eng-123/thanks",
+    "title": "Application received - Acme",
+    "text": "Thanks for applying to Acme Corp. We have received your application for Senior Backend Engineer.",
+    "elements": []
+  }
+]

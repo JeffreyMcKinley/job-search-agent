@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>{{CANDIDATE_NAME}} - Resume</title>
+<style>
+  @page { size: letter; margin: 0.5in; }
+  * { box-sizing: border-box; }
+  body { font-family: "Calibri", "Segoe UI", Arial, sans-serif; font-size: 10.5pt; line-height: 1.32; color: #1a1a1a; margin: 0; padding: 0; }
+  header { text-align: center; border-bottom: 2px solid #1f6f54; padding-bottom: 8px; margin-bottom: 12px; }
+  h1 { font-size: 22pt; margin: 0 0 4px; letter-spacing: 0.5px; color: #1f6f54; }
+  .contact { font-size: 9.5pt; color: #333; }
+  .contact a { color: #1f6f54; text-decoration: none; }
+  h2 { font-size: 11.5pt; text-transform: uppercase; letter-spacing: 0.6px; color: #1f6f54; border-bottom: 1px solid #b7d4c8; padding-bottom: 2px; margin: 10px 0 5px; }
+  .job { margin-bottom: 8px; }
+  .job-head { display: flex; justify-content: space-between; align-items: baseline; }
+  .job-title { font-weight: 700; font-size: 10.8pt; }
+  .job-meta { font-size: 9pt; color: #555; font-style: italic; }
+  ul { margin: 4px 0 0; padding-left: 18px; }
+  li { margin-bottom: 2px; }
+  .summary { margin-bottom: 4px; text-align: justify; }
+  .skills p { margin: 3px 0; }
+  .skills strong { color: #1f6f54; }
+</style>
+</head>
+<body>
+<header>
+  <h1>{{CANDIDATE_NAME}}</h1>
+  <div class="contact">
+    {{LOCATION}} &nbsp;&middot;&nbsp; {{PHONE}} &nbsp;&middot;&nbsp; {{EMAIL}}<br>
+    <a href="{{LINKEDIN_URL}}">{{LINKEDIN_TEXT}}</a> &nbsp;&middot;&nbsp;
+    <a href="{{GITHUB_URL}}">{{GITHUB_TEXT}}</a>
+  </div>
+</header>
+
+<section>
+  <h2>Summary</h2>
+  <p class="summary">{{SUMMARY}}</p>
+</section>
+
+<section>
+  <h2>Work experience</h2>
+  <!-- Repeat one .job block per role, most recent first. Include only roles
+       relevant to this job. Draw from the master resume; never pull
+       pre-software operations roles onto a software resume.
+       A date gap is fine; an irrelevant role is not. -->
+  <div class="job">
+    <div class="job-head">
+      <span class="job-title">{{JOB_TITLE}}, {{EMPLOYER}}</span>
+      <span class="job-meta">{{START_DATE}} to {{END_DATE}}</span>
+    </div>
+    <div class="job-meta">{{TEAM_OR_CONTEXT}} &middot; {{LOCATION}}</div>
+    <ul>
+      <li>{{BULLET}}</li>
+    </ul>
+  </div>
+</section>
+
+<section class="skills">
+  <h2>Technologies and languages</h2>
+  <p><strong>Languages:</strong> {{LANGUAGES}}</p>
+  <p><strong>Front-end:</strong> {{FRONTEND}}</p>
+  <p><strong>Back-end &amp; data:</strong> {{BACKEND}}</p>
+  <p><strong>AI &amp; tooling:</strong> {{AI_TOOLING}}</p>
+  <p><strong>Testing &amp; practices:</strong> {{TESTING}}</p>
+</section>
+</body>
+</html>

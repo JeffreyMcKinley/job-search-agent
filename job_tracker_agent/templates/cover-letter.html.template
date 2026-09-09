@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>{{CANDIDATE_NAME}} - Cover Letter - {{COMPANY}}</title>
+<style>
+  @page { size: letter; margin: 1in; }
+  * { box-sizing: border-box; }
+  body { font-family: "Calibri", "Segoe UI", Arial, sans-serif; font-size: 11pt; line-height: 1.5; color: #1a1a1a; margin: 0; padding: 0; }
+  .sender { margin-bottom: 16px; }
+  .sender p { margin: 0; line-height: 1.4; }
+  .date { margin-bottom: 16px; }
+  .recipient { margin-bottom: 16px; }
+  .recipient p { margin: 0; line-height: 1.4; }
+  .salutation { margin-bottom: 12px; }
+  .body-text p { margin: 0 0 12px; text-align: justify; }
+  .closing { margin-top: 16px; }
+  .closing p { margin: 0; }
+  .signature { margin-top: 12px; font-weight: 600; }
+</style>
+</head>
+<body>
+<div class="sender">
+  <p>{{CANDIDATE_NAME}}</p>
+  <p>{{STREET}}</p>
+  <p>{{CITY_STATE_ZIP}}</p>
+  <p>{{PHONE}}</p>
+  <p>{{EMAIL}}</p>
+</div>
+
+<div class="date">
+  <p>{{LONG_DATE}}</p>
+</div>
+
+<div class="recipient">
+  <p>{{COMPANY}}</p>
+  <p>Hiring Team</p>
+</div>
+
+<div class="salutation">
+  <p>Dear Hiring Manager,</p>
+</div>
+
+<div class="body-text">
+  <!-- 250-350 words total. One <p> per paragraph. Hyphens only, never em dashes. -->
+  <p>{{PARAGRAPH}}</p>
+</div>
+
+<div class="closing">
+  <p>Regards,</p>
+</div>
+
+<div class="signature">
+  <p>{{CANDIDATE_NAME}}</p>
+</div>
+</body>
+</html>
