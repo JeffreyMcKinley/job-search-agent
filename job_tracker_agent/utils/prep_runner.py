@@ -104,10 +104,11 @@ def _run_agent(prompt: str, run_dir, total_budget: int, idle_budget: int,
     last_output = [time.monotonic()]
     started = time.monotonic()
 
-    # config.py calls load_dotenv on job_tracker_agent/.env, which carries an
-    # ANTHROPIC_API_KEY. Nothing in this project reads it, but importing config
-    # puts it in os.environ, and the CLI prefers an API key over the Claude Code
-    # subscription. That silently bills the API account instead of the plan and
+    # An ANTHROPIC_API_KEY in the environment — from a shell profile, or from a
+    # .env that some other tool loaded — is stripped before the child starts.
+    # Nothing in this project reads it, but the CLI prefers an API key over the
+    # Claude Code subscription. That silently bills the API account instead of
+    # the plan and
     # fails outright with "Credit balance is too low" once the key has no funds
     # -- while `claude` run by hand, with no such key in scope, works fine.
     # It also disables claude.ai connectors, which is why an inherited-key run
