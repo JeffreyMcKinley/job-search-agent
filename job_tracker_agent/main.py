@@ -15,6 +15,8 @@ Usage:
     python main.py prepare-move <url> — Move URL from "to apply" to "ready to apply" with auto-detected folder data
     python main.py gmail-companies   — List companies from "awaiting response" for Gmail scan (JSON)
     python main.py dedup <tab>       — Find and remove duplicate URLs in a tab (JSON report)
+    python main.py company-cap [--tab T] [--cap N] [--window-days N] [--dry-run]
+                                     — Hold each company to N applications per rolling window
     python main.py gmail-auth        — Run OAuth flow for Gmail API (readonly)
     python main.py scan-gmail        — Scan Gmail for rejections/interviews and move rows
     python main.py scan-gmail --dry-run — Scan Gmail but don't move any rows
@@ -63,6 +65,7 @@ from utils import (
     cmd_auth,
     cmd_backfill,
     cmd_check_bespoke,
+    cmd_company_cap,
     cmd_dedup,
     cmd_fetch_job,
     cmd_find_url,
@@ -112,6 +115,8 @@ def __main__() -> None:
         cmd_list_rows(sys.argv[2])
     elif command == "add-row":
         cmd_add_row(sys.argv[2:])
+    elif command == "company-cap":
+        cmd_company_cap(sys.argv[2:])
     elif command == "move-row":
         cmd_move_row(sys.argv[2:])
     elif command == "find-url":

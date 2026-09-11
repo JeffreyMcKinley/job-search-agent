@@ -199,3 +199,43 @@ def cmd_dedup(tab: str) -> None:
         print(f"\nRemoved {report['rows_removed']} duplicate rows from '{tab}'.")
     else:
         print(f"\nNo duplicates found in '{tab}'.")
+
+
+def cmd_company_cap(args: list[str]) -> None:
+    """Hold each company to a fixed number of applications per rolling window.
+
+    Runs automatically inside `prep`; exposed separately so the effect can be
+    inspected with --dry-run before anything moves.
+    """
+    from sheets import (
+        COMPANY_APPLICATION_CAP,
+        COMPANY_CAP_WINDOW_DAYS,
+        company_cap_report,
+        connect,
+    )
+
+    tab = "to apply"
+    cap = COMPANY_APPLICATION_CAP
+    window = COMPANY_CAP_WINDOW_DAYS
+    dry_run = "--dry-run" in args
+
+    for i, a in enumerate(args):
+        if a == "--tab" and i + 1 < len(args):
+            tab = args[i + 1]
+        elif a == "--cap" and i + 1 < len(args):
+            cap = int(args[i + 1])
+        elif a == "--window-days" and i + 1 < len(args):
+            window = int(args[i + 1])
+
+    report = company_cap_report(
+        connect(), tab, cap=cap, window_days=window, apply_changes=not dry_run
+    )
+    print(json.dumps(report, indent=2))
+    if report["over_cap"]:
+        verb = "would move" if dry_run else "moved"
+        print(
+            f"\n{len(report['over_cap'])} row(s) {verb} to 'invalid': over the "
+            f"{cap}-per-{window}-day cap at " + ", ".join(report["companies_at_cap"]) + "."
+        )
+    else:
+        print(f"\nNo company is over the {cap}-per-{window}-day cap in '{tab}'.")

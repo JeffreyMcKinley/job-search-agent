@@ -36,7 +36,13 @@ def cmd_prep(args: list[str]) -> None:
     from bespoke import check_folder
     from config import JOBS_DIR, PREP_RUNS_DIR, VOICE_CARD
     from prep_models import PrepBatch, PrepStatus, reconcile
-    from sheets import apply_prep_batch, connect, dedup_tab, read_tab
+    from sheets import (
+        apply_prep_batch,
+        company_cap_report,
+        connect,
+        dedup_tab,
+        read_tab,
+    )
 
     limit = 0
     only_urls: list[str] = []
@@ -64,6 +70,20 @@ def cmd_prep(args: list[str]) -> None:
         dedup = dedup_tab(spreadsheet, "to apply")
         if dedup["rows_removed"]:
             print(f"  Removed {dedup['rows_removed']} duplicate rows.")
+
+        # URL dedup only catches the same posting twice. This catches the
+        # other overspend: many different requisitions at one company, which
+        # burns a finite per-employer application quota on whichever reqs the
+        # search happened to scrape first.
+        print("Applying the per-company application cap...")
+        capped = company_cap_report(spreadsheet, "to apply")
+        if capped["rows_moved_to_invalid"]:
+            print(
+                f"  Moved {capped['rows_moved_to_invalid']} row(s) to 'invalid': "
+                f"over the {capped['cap']}-per-{capped['window_days']}-day cap at "
+                + ", ".join(capped["companies_at_cap"])
+                + "."
+            )
 
     rows = read_tab(spreadsheet, "to apply")
     jobs = [

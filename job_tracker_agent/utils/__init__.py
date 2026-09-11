@@ -39,7 +39,6 @@ from .lead_commands import (
     cmd_wttj_script,
 )
 from .linkedin_commands import cmd_linkedin_search
-from .run_commands import cmd_run_log, cmd_run_report
 from .pdf import (
     CANDIDATE_NAME,
     COVER_CSS_SIGNATURE,
@@ -67,10 +66,12 @@ from .prep_runner import (
     _run_agent,
     _transient_rejection,
 )
+from .run_commands import cmd_run_log, cmd_run_report
 from .sheet_commands import (
     cmd_add_row,
     cmd_all_urls,
     cmd_auth,
+    cmd_company_cap,
     cmd_dedup,
     cmd_find_url,
     cmd_list_rows,
@@ -100,6 +101,7 @@ __all__ = [
     "cmd_auth",
     "cmd_backfill",
     "cmd_check_bespoke",
+    "cmd_company_cap",
     "cmd_dedup",
     "cmd_fetch_job",
     "cmd_find_url",

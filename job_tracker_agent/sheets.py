@@ -5,7 +5,7 @@ from __future__ import annotations
 import re
 import sys
 import time
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from typing import TYPE_CHECKING, Any
 
 import gspread
@@ -624,4 +624,149 @@ def dedup_tab(spreadsheet: gspread.Spreadsheet, tab: str) -> dict[str, Any]:
         ],
         "cross_tab_duplicates": cross_tab_dups,
         "rows_removed": deleted,
+    }
+
+
+# A company that has already seen this many applications inside the window
+# will not get another one prepared. The cap exists because the prep pipeline
+# happily prepares every requisition a company posts, and some ATSes enforce
+# their own limit (OpenAI allows 5 per 180 days across all its roles), so an
+# unbounded run spends a finite quota on whichever reqs happened to be scraped
+# first rather than on the best-fitting ones.
+COMPANY_APPLICATION_CAP = 3
+COMPANY_CAP_WINDOW_DAYS = 180
+
+# Reaching one of these tabs means an application was actually submitted.
+APPLIED_TABS = ("awaiting response", "rejected", "received interview")
+
+
+def _parse_sheet_date(value: str) -> datetime | None:
+    """Parse a YYYY-MM-DD sheet date, returning None when it is unusable."""
+    text = (value or "").strip()
+    if not text:
+        return None
+    try:
+        return datetime.strptime(text[:10], "%Y-%m-%d")
+    except ValueError:
+        return None
+
+
+def _company_key(raw: str) -> str:
+    """Normalized company name for counting, or '' when none can be read.
+
+    Uses clean_company_name so a row whose Company cell holds a whole company
+    description still groups with the tidy rows for the same employer.
+    """
+    return clean_company_name(raw).strip().casefold()
+
+
+def company_cap_report(
+    spreadsheet: gspread.Spreadsheet,
+    tab: str = "to apply",
+    cap: int = COMPANY_APPLICATION_CAP,
+    window_days: int = COMPANY_CAP_WINDOW_DAYS,
+    apply_changes: bool = True,
+) -> dict[str, Any]:
+    """Hold each company to `cap` applications per rolling `window_days`.
+
+    Counts what a company has already consumed: rows that reached an applied
+    tab inside the window, plus rows sitting in 'ready to apply', which are
+    prepared and queued and so are committed spend rather than candidates.
+    Any row in `tab` beyond the remaining allowance is moved to 'invalid' with
+    the reason written to Notes.
+
+    Moved rather than deleted on purpose. The row is a real posting that may
+    be worth revisiting once the window rolls forward, and a deleted row would
+    be re-added by the next search as if it had never been seen.
+
+    Rows are kept in sheet order, so the earliest-added requisition for a
+    company wins the slot. A row with an unreadable date counts against the
+    cap: under-counting would silently overspend the quota.
+    """
+    cutoff = datetime.now(timezone.utc).astimezone().replace(tzinfo=None) - timedelta(
+        days=window_days
+    )
+
+    spent: dict[str, int] = {}
+    for other_tab in APPLIED_TABS:
+        try:
+            rows = read_tab(spreadsheet, other_tab)
+        except gspread.WorksheetNotFound:
+            continue
+        for r in rows:
+            key = _company_key(r.record.company)
+            if not key:
+                continue
+            stamp = _parse_sheet_date(r.record.date_applied) or _parse_sheet_date(
+                r.record.date_added
+            )
+            if stamp is None or stamp >= cutoff:
+                spent[key] = spent.get(key, 0) + 1
+
+    # 'ready to apply' is prepared work heading for submission, so it occupies
+    # a slot even though no application has been sent yet.
+    if tab != "ready to apply":
+        try:
+            for r in read_tab(spreadsheet, "ready to apply"):
+                key = _company_key(r.record.company)
+                if key:
+                    spent[key] = spent.get(key, 0) + 1
+        except gspread.WorksheetNotFound:
+            pass
+
+    rows = read_tab(spreadsheet, tab)
+    kept_this_run: dict[str, int] = {}
+    over_cap: list[dict[str, Any]] = []
+
+    for r in rows:
+        key = _company_key(r.record.company)
+        if not key:
+            continue
+        used = spent.get(key, 0) + kept_this_run.get(key, 0)
+        if used >= cap:
+            over_cap.append(
+                {
+                    "url": r.record.posting_url,
+                    "company": r.record.company,
+                    "title": r.record.title,
+                    "row": r.row_number,
+                    "already_used": used,
+                    "cap": cap,
+                }
+            )
+        else:
+            kept_this_run[key] = kept_this_run.get(key, 0) + 1
+
+    moved = 0
+    if apply_changes:
+        for entry in over_cap:
+            record = next(
+                (
+                    r.record
+                    for r in rows
+                    if r.row_number == entry["row"]
+                ),
+                None,
+            )
+            if record is None:
+                continue
+            note = (
+                f"Over the {cap}-per-{window_days}-day company cap: "
+                f"{entry['already_used']} already applied or queued for "
+                f"{clean_company_name(record.company) or record.company}."
+            )
+            record.notes = f"{record.notes} {note}".strip() if record.notes else note
+            if move_row(spreadsheet, record.posting_url, tab, "invalid", record):
+                moved += 1
+
+    return {
+        "tab": tab,
+        "cap": cap,
+        "window_days": window_days,
+        "companies_at_cap": sorted(
+            {clean_company_name(e["company"]) or e["company"] for e in over_cap}
+        ),
+        "over_cap": over_cap,
+        "rows_moved_to_invalid": moved,
+        "dry_run": not apply_changes,
     }

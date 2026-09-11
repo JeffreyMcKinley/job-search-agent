@@ -163,6 +163,13 @@ Fill out applications in Chrome using previously prepared materials.
 3. Using Claude in Chrome, fill applications in batches of 6, driven by each
    job's `application-plan.md`. Don't submit the applications and don't upload
    the PDFs — hand the user the absolute paths from the plan's Uploads section.
+   If you encounter any issues with filling an application, like the site requires a login
+   or has a bot wall, leave the posting URL open and inform the user of the actions they
+   should take to proceed. The goal is to work with them to get through all the postings
+   in a way that's easy for them to track, not what's easisiest to fill quicky.
+
+   When you've finished a batch, show a table of the jobs the user needs to take current action on,
+   the Company name, and the folder name as the user will need to reference it to complete the application.
 
 4. Wait for the user to say the batch is done, then get the status for each
    application (APPLIED, INVALID, POOR FIT, etc.).

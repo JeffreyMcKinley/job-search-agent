@@ -173,6 +173,10 @@ does not exist offline, so this skill does not try to guess it.
 Always generate one. An unused cover letter costs one file; a missing one
 blocks a fill session later.
 
+Use /proficiently:cover-letter as the main skill to guied this process. The
+steps below expand on the content in the /proficiently:cover-letter skill,
+that skill forms the basis of all further directions.
+
 ### The letter argues one thing: hire this person
 
 A cover letter is not a fit report and it is not a self-assessment. It is the

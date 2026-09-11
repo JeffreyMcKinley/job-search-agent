@@ -48,7 +48,7 @@ Add job URLs to the "to apply" tab.
      Returns JSON with `{company, title, success}`. Fetches the page HTML and extracts company/title from `<title>` tag and URL patterns. No model interaction needed.
    - **c) Chrome fallback** — only if fetch-job returns `success: false` (JS-rendered pages, bot blocks). Use Claude in Chrome to navigate and read page text. Extract company and title.
    - **d) Ask user** — if all above fail.
-   
+
    This command only needs company + title for the spreadsheet row. Full posting extraction is handled later by `/mass-apply` or `/proficiently:apply`.
 
 3. Generate a folder slug: `{company-slug}-{YYYY-MM-DD}` format.
@@ -222,9 +222,31 @@ For a single job, or a small test batch:
 ... main.py prep --no-apply         # run the agent, skip the sheet updates
 ```
 
-`prep` dedups "to apply", runs the preparation agent, validates its result
-against a schema, re-checks that the generated materials are bespoke, and then
-applies every sheet change in one batch. Report the JSON it prints.
+`prep` dedups "to apply", applies the per-company cap, runs the preparation
+agent, validates its result against a schema, re-checks that the generated
+materials are bespoke, and then applies every sheet change in one batch. Report
+the JSON it prints.
+
+**The per-company cap.** At most **3 applications to one company per rolling
+180 days**. URL dedup only catches the same posting twice; this catches the
+other overspend, many different requisitions at one employer. A company's
+allowance counts rows that reached "awaiting response", "rejected" or "received
+interview" inside the window, plus anything sitting in "ready to apply", which
+is prepared and queued and so already committed. Rows over the allowance move
+to "invalid" with the reason in Notes, keeping the earliest-added requisition.
+They are moved rather than deleted so they can be revisited once the window
+rolls forward, and so the next search does not re-add them as if unseen.
+
+Some ATSes enforce their own ceiling on top of this. OpenAI allows 5
+applications per 180 days across every one of its roles.
+
+Inspect it without running a whole prep:
+
+```bash
+... main.py company-cap --dry-run
+... main.py company-cap --tab "ready to apply" --dry-run
+... main.py company-cap --cap 2 --window-days 90
+```
 
 Rows move as follows:
 
