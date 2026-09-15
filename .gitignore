@@ -3,6 +3,7 @@ venv/
 job_tracker_agent/venv/
 .mypy_cache/
 __pycache__/
+.scratch/
 *.pyc
 
 # --- credentials: never commit ---
