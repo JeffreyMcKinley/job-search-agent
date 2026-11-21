@@ -13,11 +13,18 @@ from __future__ import annotations
 
 import re
 from enum import Enum
-from typing import Literal
+from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, model_validator
 
 DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
+
+# A LinkedIn job permalink. Matching it is what makes a URL "a wrapper" rather
+# than a posting: the apply button behind it either opens LinkedIn's own form
+# (Easy Apply) or redirects to the employer's ATS (offsite).
+LINKEDIN_JOB_RE = re.compile(
+    r"^https?://([a-z0-9-]+\.)*linkedin\.com/jobs/(view|collections)/", re.IGNORECASE
+)
 
 # cmd_fetch_job uses this as a title sentinel when the HTTP GET failed but the
 # URL still matched an ATS pattern. It must never reach the spreadsheet.
@@ -54,12 +61,26 @@ TERMINAL_REASONS = {
 }
 
 
+def _is_plain_str_field(model: type[BaseModel], name: str) -> bool:
+    """True if `name` is a field on `model` annotated exactly `str`."""
+    field = model.model_fields.get(name)
+    return field is not None and field.annotation is str
+
+
 class PrepItem(BaseModel):
     """One job's outcome from a prep run."""
 
     model_config = ConfigDict(extra="forbid")
 
+    # The URL exactly as requested. `reconcile` matches on it, so it must come
+    # back unchanged even when the posting really lives somewhere else.
     url: str
+    # Where the posting actually lives, when `url` was only a wrapper around it
+    # -- a LinkedIn offsite listing being the case that matters. Empty means
+    # `url` was already the real thing. On a prepared item the sheet row's
+    # posting_url is rewritten to this, so the fill phase applies at the source
+    # instead of bouncing off a login wall.
+    resolved_url: str = ""
     status: PrepStatus
     folder_name: str = ""  # basename under JOBS_DIR, never an absolute path
     company: str = ""
@@ -70,7 +91,11 @@ class PrepItem(BaseModel):
     resume_pdf: str = ""  # filename within the folder
     cover_letter_pdf: str = ""
     application_plan: str = ""
-    fetch_method: Literal["webfetch", "chrome", "cached", "none"] = "none"
+    # Free-form on purpose. This is a diagnostic breadcrumb, not a control
+    # value -- nothing branches on it and it never reaches the sheet. A closed
+    # Literal here failed whole batches over strings like
+    # "greenhouse_boards_api" that described the fetch perfectly well.
+    fetch_method: str = "none"
     invalid_reason: InvalidReason | None = None
 
     @property
@@ -81,6 +106,25 @@ class PrepItem(BaseModel):
             and self.invalid_reason in TERMINAL_REASONS
         )
 
+    @model_validator(mode="before")
+    @classmethod
+    def _blank_nulls(cls, data: Any) -> Any:
+        """Treat an explicit null as the empty default on the plain str fields.
+
+        Agents use `null` and `""` interchangeably for "nothing here", in the
+        envelope and in the per-folder sidecars alike. Rejecting null bought
+        nothing and cost a whole 72-job batch once: "" is already the declared
+        default on every field this touches. Only fields annotated exactly
+        `str` are coerced, so `invalid_reason` keeps None as a real value and a
+        null `status` still fails loudly.
+        """
+        if not isinstance(data, dict):
+            return data
+        return {
+            k: "" if v is None and _is_plain_str_field(cls, k) else v
+            for k, v in data.items()
+        }
+
     @model_validator(mode="after")
     def _check(self) -> PrepItem:
         from config import JOBS_DIR
@@ -89,6 +133,16 @@ class PrepItem(BaseModel):
 
         if not self.url.strip():
             errs.append("url is empty")
+
+        if self.resolved_url.strip():
+            if not self.resolved_url.startswith(("http://", "https://")):
+                errs.append(f"resolved_url {self.resolved_url!r} is not an http(s) URL")
+            elif LINKEDIN_JOB_RE.match(self.resolved_url):
+                errs.append(
+                    f"resolved_url {self.resolved_url!r} is another LinkedIn job link. "
+                    "It must be the employer's own posting -- leave it empty for an "
+                    "Easy Apply job instead of pointing it back at LinkedIn."
+                )
 
         if self.title.strip() == FETCH_FAILED_SENTINEL:
             errs.append(

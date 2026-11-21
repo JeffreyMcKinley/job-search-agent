@@ -20,6 +20,12 @@ PREP_IDLE_TIMEOUT = 900
 # tight, because what clears the refusal is the usage window recovering, and
 # hammering it just burns the headroom that recovery produces.
 PREP_RETRY_BACKOFF = (60, 180, 420)
+# How long `claude -p` waits on still-running background tasks before it gives
+# up and terminates. The default 600s is far shorter than a full batch's PDF
+# rendering tail, and hitting it killed the agent before it could write the
+# result envelope. 0 means wait indefinitely, which is safe here because the
+# total and idle budgets below are the guards that actually catch a hang.
+PREP_BG_WAIT_CEILING_MS = "0"
 
 
 def _reconstruct_from_sidecars(requested: list[str]) -> dict | None:
@@ -117,6 +123,7 @@ def _run_agent(prompt: str, run_dir, total_budget: int, idle_budget: int,
         k: v for k, v in os.environ.items()
         if k not in ("ANTHROPIC_API_KEY", "ANTHROPIC_AUTH_TOKEN")
     }
+    child_env["CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS"] = PREP_BG_WAIT_CEILING_MS
 
     proc = subprocess.Popen(
         cmd, cwd=str(PROJECT_DIR.parent), env=child_env,

@@ -77,8 +77,8 @@ def cmd_linkedin_search(args: list[str]) -> None:
     date_added = today()
     jobs = []
     for posting in report.postings:
-        slug, _ats = extract_company_from_url(posting.url)
-        if not slug:
+        slug, ats = extract_company_from_url(posting.url)
+        if not slug or ats == "unknown":
             # A /jobs/view/ URL names no employer, so fall back to the company
             # off the card. prep re-fetches the posting and corrects both.
             slug = _slugify(posting.company)

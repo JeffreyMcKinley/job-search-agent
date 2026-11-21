@@ -16,6 +16,7 @@ gmail_authorized_user.json.expired-*
 token*.json
 
 # --- personal ---
+.personal/
 .unslop/
 logs/
 .tmp/

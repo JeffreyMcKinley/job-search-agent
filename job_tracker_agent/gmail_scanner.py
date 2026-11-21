@@ -130,9 +130,10 @@ def gmail_auth() -> Credentials:
                 creds.refresh(Request())
                 refreshed = True
             except RefreshError as exc:
-                # Unverified OAuth apps get 7-day refresh tokens, so a stored
-                # token that sat unused goes dead rather than stale. Archive it
-                # and fall through to a fresh browser flow instead of failing.
+                # Refresh tokens issued while the OAuth app is in "Testing"
+                # status expire 7 days after consent, used or not; a revoked
+                # grant fails the same way. Archive the dead token and fall
+                # through to a fresh browser flow instead of failing.
                 print(f"Stored Gmail token unusable ({exc}). Re-authorizing.")
                 stamp = datetime.now().strftime("%Y%m%d")
                 GMAIL_AUTHORIZED_USER_FILE.replace(

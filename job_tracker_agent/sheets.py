@@ -493,6 +493,12 @@ def apply_prep_batch(
                 extra["title"] = item.title
             if item.notes:
                 extra["notes"] = item.notes
+            # A LinkedIn offsite listing is a wrapper, not the posting. Carry
+            # the employer's own URL into "ready to apply" so the fill phase
+            # opens the real form instead of a login wall. Matching above
+            # already happened on item.url, so this is safe here.
+            if item.resolved_url:
+                extra["posting_url"] = item.resolved_url
 
             if key in already_ready:
                 report["already_moved"].append({"url": item.url, "status": "prepared"})
@@ -636,6 +642,21 @@ def dedup_tab(spreadsheet: gspread.Spreadsheet, tab: str) -> dict[str, Any]:
 COMPANY_APPLICATION_CAP = 3
 COMPANY_CAP_WINDOW_DAYS = 180
 
+# Recruiting agencies and anonymized job boards are exempt from the cap. A name
+# like Clera is one board fronting hundreds of requisitions for different
+# employers, so three rows under that name are three different companies, not
+# three applications to one. Capping them would throw away real postings.
+# Match is on the normalized company key, substring, so "clera" also catches
+# "Clera (via Ashby)".
+CAP_EXEMPT_COMPANIES = (
+    "clera",
+)
+
+
+def _is_cap_exempt(key: str) -> bool:
+    """True when a company key names a recruiting agency or anonymized board."""
+    return any(name in key for name in CAP_EXEMPT_COMPANIES)
+
 # Reaching one of these tabs means an application was actually submitted.
 APPLIED_TABS = ("awaiting response", "rejected", "received interview")
 
@@ -682,6 +703,9 @@ def company_cap_report(
     Rows are kept in sheet order, so the earliest-added requisition for a
     company wins the slot. A row with an unreadable date counts against the
     cap: under-counting would silently overspend the quota.
+
+    Companies in CAP_EXEMPT_COMPANIES are skipped entirely. They are recruiting
+    agencies or anonymized boards where one name covers many real employers.
     """
     cutoff = datetime.now(timezone.utc).astimezone().replace(tzinfo=None) - timedelta(
         days=window_days
@@ -720,7 +744,7 @@ def company_cap_report(
 
     for r in rows:
         key = _company_key(r.record.company)
-        if not key:
+        if not key or _is_cap_exempt(key):
             continue
         used = spent.get(key, 0) + kept_this_run.get(key, 0)
         if used >= cap:

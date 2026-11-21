@@ -237,8 +237,16 @@ to "invalid" with the reason in Notes, keeping the earliest-added requisition.
 They are moved rather than deleted so they can be revisited once the window
 rolls forward, and so the next search does not re-add them as if unseen.
 
+Recruiting agencies and anonymized job boards are exempt. A board like Clera
+fronts hundreds of requisitions for different employers under one name, so three
+rows there are three separate companies rather than three applications to one.
+Exempt names live in `CAP_EXEMPT_COMPANIES` in `job_tracker_agent/sheets.py`;
+add a board there when a new one shows up.
+
 Some ATSes enforce their own ceiling on top of this. OpenAI allows 5
-applications per 180 days across every one of its roles.
+applications per 180 days across every one of its roles. Propel allows 1
+application per 30 days (its Ashby banner says 60 for engineering roles, so
+use the longer window).
 
 Inspect it without running a whole prep:
 
@@ -287,7 +295,20 @@ Fill out applications in Chrome for jobs in "ready to apply". Uses prepared mate
    - Moves completed rows to "awaiting response"
    - Updates proficiently folders with `applied.md`
 
-2. Report final summary.
+2. Two rules carry through that whole run:
+
+   **Order is fixed.** Fill the URLs in the order the tracker hands them back,
+   oldest row first, and batch them in that same order. Postings expire, so the
+   oldest is the one most at risk of going dead before it is reached. Do not
+   reorder by ATS or by which sites look quicker to fill.
+
+   **Unfillable is not a question.** LinkedIn Easy Apply, a login wall, a bot
+   check, an ATS that blocks automation — take the posting as far as it goes,
+   leave the tab open, and pass it to the user with what remains. No approval
+   needed to hand one off. Ask the user only about judgment calls: a poor-fit
+   role, or job details that contradict `preferences.md` or `profile.md`.
+
+3. Report final summary.
 
 ---
 

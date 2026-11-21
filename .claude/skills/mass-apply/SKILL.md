@@ -89,6 +89,11 @@ disk. Do **not** retype
 what a subagent reported into the envelope — transcription is where errors
 enter, and the files are already exact.
 
+Every item's `url` must be the requested URL verbatim, even when the subagent
+prepped against a different one. A LinkedIn offsite listing is the case that
+comes up: the employer's URL belongs in `resolved_url`, and `url` still holds
+the LinkedIn link the sheet row is keyed on.
+
 For any requested URL with no `prep-result.json`, synthesize an item:
 
 ```json
@@ -132,6 +137,8 @@ Common rejections and their fixes:
 | `title is the '(fetch failed)' sentinel` | The posting was never read; report the job as `invalid`, not `prepared` |
 | `check-bespoke` reports `open_ended_over_two_sentences` | An answer runs past the two-sentence cap; cut a fact rather than splicing sentences together |
 | `Extra inputs are not permitted` | Remove the invented field; the schema is closed |
+| `result contains a URL that was never requested` | An item's `url` was rewritten. It must be the URL from the urls file verbatim; a LinkedIn offsite job's employer URL belongs in `resolved_url` |
+| `resolved_url ... is another LinkedIn job link` | `resolved_url` takes the employer's own posting only. Leave it empty for Easy Apply |
 
 ### 6. Report
 
@@ -156,6 +163,13 @@ Fill out applications in Chrome using previously prepared materials.
    ```
    If given a specific URL, use just that one.
 
+   **Work the URLs in the order they are given.** `list-rows` returns them
+   oldest-added first, and that order is the point: postings expire, so the
+   oldest row is the one most likely to go dead before it is reached. Never
+   reorder by ATS, by how easy a site looks to fill, or by anything else. Batch
+   boundaries follow the same order — the first 6 rows are batch one, the next 6
+   are batch two.
+
 2. For each job, verify `~/.proficiently/jobs/<folder>/` has `resume.md`,
    `posting.md`, and `application-plan.md`. Skip any without materials and
    report them as not prepared.
@@ -167,6 +181,25 @@ Fill out applications in Chrome using previously prepared materials.
    or has a bot wall, leave the posting URL open and inform the user of the actions they
    should take to proceed. The goal is to work with them to get through all the postings
    in a way that's easy for them to track, not what's easisiest to fill quicky.
+
+   **A form you cannot fill is a normal outcome, not a question.** LinkedIn Easy
+   Apply, a login wall, a bot check, a CAPTCHA, an ATS that rejects automation —
+   when you hit one, get the posting as far along as you can, leave that tab
+   open, and hand it to the user with what is left to do. Do not ask permission
+   to give up on it and do not stall the batch waiting for an answer. Partial
+   progress handed over beats a blocked queue.
+
+   **Do ask** when the judgment is the user's rather than mechanical:
+
+   - the posting turns out to be a poor fit (wrong seniority, wrong stack,
+     a role materially different from what the tracker row said)
+   - the job details contradict `preferences.md` or `profile.md` — comp below
+     the floor, onsite when remote was required, a location that does not work
+   - the form wants a fact that is not in the profile or application data, and
+     guessing it would put something untrue on the application
+
+   Raise these when you hit them and keep filling the rest of the batch; collect
+   the questions and put them in the batch report rather than freezing on each one.
 
    When you've finished a batch, show a table of the jobs the user needs to take current action on,
    the Company name, and the folder name as the user will need to reference it to complete the application.

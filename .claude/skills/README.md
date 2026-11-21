@@ -1,6 +1,6 @@
 # Project skills
 
-These three skills live here rather than in `~/.claude/skills/` so they travel
+These skills live here rather than in `~/.claude/skills/` so they travel
 with the Python code they drive. Every one of them shells out to
 `job_tracker_agent/main.py`, and the two halves have to change together — the
 result schema, the `posting.md` format, the HTML templates, and the
@@ -12,6 +12,7 @@ and a Python module.
 | `job-tracker` | Top level. Owns the Google Sheets board and its subcommands. |
 | `mass-apply` | `prep` fans out across a batch of URLs and returns one validated result object. `fill` drives Chrome. |
 | `apply-prep` | Prepares exactly one job, offline. Invoked per URL by `mass-apply prep`. |
+| `setup` | One-time onboarding. Runs `/proficiently:setup` for anything missing, then writes the gitignored `.personal/candidate-facts.md` that `apply-prep` reads. |
 
 ## Consequence of being project-scoped
 

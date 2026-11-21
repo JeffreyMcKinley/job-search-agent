@@ -50,6 +50,64 @@ Console, plus the two token files the OAuth flows write.
 `job_tracker_agent/config.py` documents every key it reads. Set
 `JOB_TRACKER_HOME` to point elsewhere.
 
+### Personal facts file
+
+The apply-prep skill also reads `.personal/candidate-facts.md` from the repo
+root. It holds facts about the candidate that the skill's rules depend on but
+that should not be published, so `.personal/` is gitignored.
+
+Generate it by running `/setup` from the repo root. That skill:
+
+1. Runs `/proficiently:setup` for anything missing. Proficiently collects the
+   resume and preferences, then interviews you role by role and writes
+   `~/.proficiently/profile.md`, which includes each role's quantified
+   accomplishments.
+2. Reads that profile and the master resume named in `profile.toml`, then
+   derives the facts file:
+   - **Software engineering roles**: the employers on the master resume.
+   - **Operations roles**: roles in the profile that are not on the master
+     resume, plus the skills that only those roles support.
+   - **Headline results**: three to five numbered accomplishments from the
+     software roles.
+3. Shows you the draft and writes it after you confirm.
+
+Run `/setup facts` to regenerate only the facts file after you change the
+master resume or re-run the proficiently interview.
+
+The file has this shape, in case you want to edit it by hand:
+
+```markdown
+# Candidate facts
+
+## Software engineering roles
+
+The roles a software engineering resume's experience section may draw from:
+
+- **<Employer>**
+- **<Employer>**
+
+## Operations roles (career-pivot only)
+
+Earlier non-software roles, used only for non-software applications. Never on
+a software engineering resume.
+
+- **<Employer>** (<what the job was>)
+
+Skills that come only from these roles, and so stay off a software resume:
+<skill>, <skill>.
+
+## Headline results
+
+The strongest quantified work, used to lead screening answers:
+
+- the <number> <thing you built or fixed>
+- ...
+```
+
+The skill names the file `FACTS` and reads it before it drafts anything. If the
+file is missing, the experience-section rules have no role list to check
+against, so run `/setup` before the first `/apply-prep`.
+
 ## Dependencies
 
 Beyond `requirements.txt`, the skills expect several things to already be

@@ -17,8 +17,12 @@ couplings explicitly — see Steps 3 and 6.
 
 Paths below use `TRACKER` for `D:\Code\HelperAgents\job_tracker_agent`,
 `PY` for `D:\Code\HelperAgents\venv\Scripts\python.exe`,
-`UNSLOP` for `~\\.claude\\skills\\unslop`, and `VOICE` for
-`D:\Code\HelperAgents\.unslop\voice\jeff`.
+`UNSLOP` for `~\.claude\skills\unslop`, `VOICE` for
+`D:\Code\HelperAgents\.unslop\voice\jeff`, and `FACTS` for
+`D:\Code\HelperAgents\.personal\candidate-facts.md` (gitignored; the README
+explains how to write it). Read `FACTS` before drafting anything: it names the
+candidate's roles and headline results, which this skill refers to but does not
+repeat.
 
 ---
 
@@ -48,11 +52,13 @@ If a new standing answer is established during this run, append it there.
 ## Writing standard: every generated document is drafted with `/unslop mimic`
 
 Every word this skill writes for a human reader is drafted in the candidate's
-taught voice using `/unslop mimic`. That covers all three documents:
+taught voice using `/unslop mimic`. That covers two documents:
 
 - `cover-letter.md`
-- `resume.md` — the summary; the bullets follow `tailor-resume`, see Step 4
 - `application-plan.md` — the `## Open-ended answers` prose
+
+`resume.md` is not voice-drafted. Its summary has its own fixed style and its
+bullets follow `tailor-resume`; see Step 4.
 
 **Draft in voice; do not write freehand and clean up afterward.** A generic
 draft run through a cleanup pass keeps the shape of a generic draft: the windup
@@ -76,7 +82,6 @@ so drafting stays cheap; reading all ten sheets wastes the saving.
 | Document | Sheets |
 |---|---|
 | `cover-letter.md` | `card/openings.md`, `card/argument.md`, `card/closings.md`, `card/addressing-reader.md` |
-| `resume.md` summary | `card/numbers-data.md` |
 | Open-ended answers | `card/anecdote.md`, `card/explaining-technical.md`, `card/numbers-data.md` |
 
 **Never load `card/hedging-uncertainty.md` for application text.** It is
@@ -120,6 +125,59 @@ Step 2. Add a short disambiguator when a slug+date pair is already taken
 (`baseten-role2-2026-08-02`, `amex-26010289-2026-07-28`).
 
 ## Step 2: Fetch the posting
+
+### First, triage a LinkedIn URL
+
+A `linkedin.com/jobs/view/...` URL is not a posting. It is a wrapper around one
+of two different things, and they need opposite handling. Determine which
+before you fetch, because for one of them the URL you were given is the wrong
+URL to prep against.
+
+Read the job id off the end of the URL and fetch LinkedIn's guest view of it:
+
+```bash
+curl -s -A "Mozilla/5.0" "https://www.linkedin.com/jobs-guest/jobs/api/jobPosting/<jobId>" | grep -o 'apply-link[-_a-z]*' | sort -u
+```
+
+Read the result:
+
+- **`offsite`** (e.g. `apply-link-offsite`) — the employer's own ATS owns this
+  application. LinkedIn only advertises it. Resolve the real URL, below.
+- **`onsite`** (e.g. `apply-link-onsite`, `apply-link-simple_onsite`) — Easy
+  Apply. LinkedIn owns the form. Change nothing: prep against the LinkedIn URL
+  exactly as given, and leave `resolved_url` empty in Step 9.
+- **no marker at all** — usually a dead posting. Check the page for "no longer
+  accepting applications" and classify it `expired` per rung 4. If the page
+  looks alive, treat it as `onsite` and carry on.
+
+#### Resolving an offsite URL
+
+The guest view never contains the employer's URL; it wraps the apply button in
+a signup redirect. So get it from Chrome, where the session is logged in:
+`tabs_create` → `navigate` to the LinkedIn URL → `read_page`, and read the
+Apply button's target. That target is the real posting.
+
+Failing that, find the posting on the employer's own site from the company and
+title you now have, and confirm the title and location match before trusting
+it. A near-miss on a similarly named role is worse than no match — if you
+cannot confirm it is the same job, do not guess. Prep against the LinkedIn URL
+and say so in `notes`.
+
+Once you have the real URL, **prep against it**: run it up the ladder below,
+slug the folder from it, and put it in `posting.md` under `**URL:**`. Two rules:
+
+- **`url` in `prep-result.json` stays the LinkedIn URL you were handed.** It is
+  what matches the spreadsheet row. Changing it fails the whole batch with
+  `result contains a URL that was never requested`.
+- **The employer URL goes in `resolved_url`.** The sheet writer moves it into
+  the row's Posting URL when the row moves to "ready to apply", so the fill
+  phase opens the employer's form and the LinkedIn wrapper is not applied to
+  twice.
+
+### Then fetch the posting
+
+Fetch whichever URL Step 2's triage settled on: the employer's for an offsite
+job, the LinkedIn one for Easy Apply or any non-LinkedIn URL.
 
 Climb this ladder in order. Stop at the first rung that yields a real posting.
 
@@ -190,6 +248,25 @@ interview. It answers three questions and nothing else:
    the system he owned end to end.
 3. **What does the team get by hiring him?** Concrete value, stated as fact.
 
+### The opening paragraph introduces him before the evidence starts
+
+Set by Jeffrey on 2026-09-14, following Cornell University's cover letter
+guidance. The first paragraph lays the foundation for the letter and contains
+all four of these, in a few sentences:
+
+1. **The position** he is applying for, by its posted title.
+2. **The employer** or department, by name.
+3. **How he learned about the opening**: the job board, a recruiter who reached
+   out, a referral. Use what is actually known; a batch-prepped posting from a
+   board is "I found the opening on <board>" only when the board is known.
+   Never invent a referral.
+4. **A brief statement about himself**: the kind of engineer he is and his core
+   stack, in one sentence. No metrics here; those belong to the evidence
+   paragraphs that follow.
+
+Achievements start in paragraph two. Do not open the letter on a project, a
+number, or a result.
+
 Close by naming what draws him to this company in particular. Enthusiasm is
 part of the argument, not decoration on it. He wants these jobs, and a letter
 that reads as neutral loses to one that does not.
@@ -208,8 +285,9 @@ The parts that matter most here:
 - **No concessive openers, and no concessive paragraphs.** A letter that
   spends a paragraph on what he has not done has spent a quarter of its words
   arguing the other side of the case.
-- **Lead with the strongest true thing.** The first sentence names work and
-  result. Never wind up, and never open on a caveat.
+- **Lead with the strongest true thing.** Once the opening paragraph has done
+  its four jobs, the first evidence paragraph names work and result. Never
+  wind up, and never open on a caveat.
 - **Cut every hedge.** Step 6's list is the list.
 - **Honesty outranks tone, and there is still no conflict.** Step 0's negative
   capability notes stay absolute. Confidence means choosing the strongest true
@@ -228,7 +306,7 @@ These came out of this pipeline before the rule existed. None may appear:
 
 | Do not write | Write instead |
 |---|---|
-| "The gap first, since it is the first thing you will check." | Open on the work this posting most wants. |
+| "The gap first, since it is the first thing you will check." | The four-part opening, then the work this posting most wants. |
 | "Two things to be straight about." | Nothing. Delete the paragraph. |
 | "I have not shipped Vue 3 professionally." | "React is my daily frontend framework," and stop. |
 | "That is not senior-level Java." | Name the Java work he did and what it ran. |
@@ -257,7 +335,9 @@ Draft it with `/unslop mimic` per the writing standard above, loading
 The fixed parts of the letter are not the card's to restyle. It opens
 `Dear Hiring Manager,` and closes `Regards,` regardless of what
 `card/openings.md` and `card/closings.md` measure — those sheets shape the
-first and last *paragraph*, not the salutation and sign-off.
+first and last *paragraph*, not the salutation and sign-off. `card/openings.md`
+says to open cold on a concrete fact; for a cover letter that governs rhythm
+only. The four-part opening above decides the first paragraph's content.
 
 ### The gate
 
@@ -287,20 +367,45 @@ already fetched). Keep all of its substance, in particular:
 - The writing rules: short sentences, no em dashes, no filler phrases, no
   stacked adjectives, summary of 2-3 sentences each under 20 words.
 - The voice rules in Step 6: no hedges, no qualifiers, no apologetic framing.
-  The summary states what he has built, not what he is working toward.
 
 These rules are what keep Step 8's check passing. A resume that lightly edits
 the master will be rejected there and have to be rewritten anyway.
 
-Draft the summary with `/unslop mimic` per the writing standard above, loading
-`card/numbers-data.md`.
+### The summary synthesizes the whole career; it never restates a bullet
 
-**The card applies to the summary, not to the bullets.** Its rhythm markers are
-measured from prose, and a resume bullet is a fragment by design. Bullets follow
-`tailor-resume`'s rules: one line each, active verb first, a real number where
-one exists. Do not lengthen a bullet to hit a median sentence length, and do not
-voice-score `resume.md` — the file is mostly fragments and headers, so the
-number would measure the format rather than the writing.
+The summary is a two-to-three sentence portrait of what kind of engineer he is
+across **all** of his experience, angled at this posting. It is not a highlight
+reel. A number, project, or accomplishment that already appears as a bullet
+below does not go in the summary — the reader is about to see it, and repeating
+it wastes the most-read lines on the page. That covers the
+headline results in `FACTS` and every other bullet.
+
+Style, set by Jeffrey on 2026-09-14. This is the model:
+
+> Full-stack engineer specializing in TypeScript with React and Node. Builds
+> tools quickly with the customer and developer experiences in mind. Works with
+> clients to ship MVPs and architects projects from concept to customer.
+
+- **No "I", implied subject.** Sentence one is a noun phrase naming the role
+  and core stack. Later sentences open on a present-tense verb ("Builds",
+  "Works", "Owns").
+- **Describe patterns, not events.** How he works and what he reliably
+  delivers, generalized across roles: speed, customer and developer experience,
+  client collaboration, ownership from concept to production, test-first
+  delivery, AI-assisted workflows.
+- **Tailor the emphasis, not the facts.** Lead with the stack the posting names
+  and pick the working patterns the posting cares about. Every pattern must
+  still be backed by the record.
+- **No metrics.** Numbers belong to bullets.
+
+Do not draft the summary with `/unslop mimic`. The voice card is measured from
+first-person essays and would pull the summary back toward "I" sentences. The
+Step 6 confidence rules still apply: no hedges, no "working toward".
+
+Bullets follow `tailor-resume`'s rules: one line each, active verb first, a
+real number where one exists. Do not voice-score `resume.md` — the file is
+mostly fragments and headers, so the number would measure the format rather
+than the writing.
 
 Step 7 runs the gate battery over every document once they all exist, so it
 covers the set in one pass rather than per file.
@@ -308,11 +413,11 @@ covers the set in one pass rather than per file.
 ### Every role in the experience section must be relevant to this job
 
 The master resume (`~/.proficiently/resume/`, filename from `profile.toml`) is the
-list of roles the experience section may draw from. Today that is
-the software engineering roles only. It is not a floor to pad out.
+list of roles the experience section may draw from. Today that is the
+**Software engineering roles** list in `FACTS`. It is not a floor to pad out.
 
-`profile.md` also carries **two pre-software
-operations roles**. Those are pre-software operations roles, kept
+`profile.md` also carries the **Operations roles** listed in `FACTS`. Those are
+pre-software operations roles, kept
 for the career-pivot case that `profile.md` names explicitly: applications to
 non-software roles such as procurement or purchasing. **Never put them in the
 experience section of a software engineering resume**, and never let them carry
@@ -322,8 +427,7 @@ A posting that talks about operations, finance, billing, supply chain, or
 internal business process is still a software job when it asks for years of
 professional software engineering experience. Domain overlap is not a licence to
 list the operations role. Make the point with software work that already touches
-the domain -- the strongest
-quantified bullets from the master resume -- and leave it there.
+the domain -- the **Headline results** in `FACTS` -- and leave it there.
 
 Two consequences worth stating:
 
@@ -331,8 +435,8 @@ Two consequences worth stating:
   drafted in Step 2 and has argued for the operations background before. It is
   input, not permission.
 - **Skills must be supported by a listed role.** If dropping a role removes the
-  only evidence for a skill, drop the skill too. Visual Basic and advanced Excel
-  come only from the operations roles, so they do not belong on a software resume.
+  only evidence for a skill, drop the skill too. `FACTS` names the skills that
+  come only from the operations roles; they do not belong on a software resume.
 
 A gap in the dates is fine and expected. An irrelevant role is not.
 
@@ -544,8 +648,7 @@ that starts by conceding ground has already lost the reader before the good
 part arrives.
 
 **Lead with the strongest true thing.** First sentence names the work and
-the result: the strongest
-quantified bullets from the master resume. Context, if any,
+the result: one of the **Headline results** in `FACTS`. Context, if any,
 comes after. Never wind up.
 
 **Short and punchy.** Two sentences, per the hard cap above. Active voice,
@@ -760,6 +863,7 @@ Write a single object into the job folder as `prep-result.json`:
 ```json
 {
   "url": "https://boards.greenhouse.io/acme/jobs/123",
+  "resolved_url": "",
   "status": "prepared",
   "folder_name": "acme-2026-09-01",
   "company": "Acme",
@@ -777,6 +881,21 @@ Write a single object into the job folder as `prep-result.json`:
 
 `folder_name` is a bare folder name, never a path. `resume_pdf` and
 `cover_letter_pdf` are filenames within the folder.
+
+`resolved_url` is empty for almost every job, including LinkedIn Easy Apply.
+Fill it only for a LinkedIn offsite listing whose employer URL you resolved in
+Step 2, and set it to that employer URL — never to another LinkedIn link, which
+the validator rejects. `url` stays the requested URL either way:
+
+```json
+{
+  "url": "https://www.linkedin.com/jobs/view/senior-engineer-at-acme-4466437607",
+  "resolved_url": "https://boards.greenhouse.io/acme/jobs/123",
+  "status": "prepared",
+  "folder_name": "acme-2026-09-12",
+  "fetch_method": "chrome (linkedin offsite) + webfetch (greenhouse)"
+}
+```
 
 For a job that could not be prepared:
 
